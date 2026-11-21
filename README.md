@@ -91,10 +91,4 @@ Remove-Item Env:DB_PASSWORD
 - mimari_diyagram.md: Proje mimarisinin Mermaid gösterimi.
 - mimari_diyagram.png: Proje mimarisi görseli.
 
-## Geliştirme Notu
 
-Bu proje eğitim amacıyla geliştirilmiştir. Kullanılan veri kümesinin büyük bölümü sentetik olarak üretilmiştir.
-
-## Geliştirici
-
-Ali Alkhaled
