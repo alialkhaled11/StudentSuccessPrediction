@@ -1,4 +1,4 @@
-
+﻿
 # Öğrenci Başarı Tahmin Sistemi
 
 ## Proje Hakkında
@@ -54,33 +54,77 @@ Veri bölme oranları:
 
 Bu sonuçlar, ağırlıklı olarak sentetik veriler kullanılarak elde edilmiştir. Gerçek öğrenci verileri üzerinde aynı performans garanti edilmez.
 
-## Docker ile Çalıştırma
+## Docker ile Kurulum ve Çalıştırma
 
-PostgreSQL veritabanı ve gerekli tablolar önceden oluşturulmuş, `student-postgres` konteyneri `student-network` ağına bağlanmış olmalıdır.
+İlk kurulum için Docker Desktop çalışıyor olmalıdır.
 
-Docker imajını oluşturun:
+### 1. Projeyi indirin
+
+```powershell
+git clone https://github.com/alialkhaled11/StudentSuccessPrediction.git
+cd StudentSuccessPrediction
+```
+
+### 2. Veritabanı parolasını belirleyin
+
+```powershell
+$env:DB_PASSWORD = Read-Host "PostgreSQL password"
+```
+
+### 3. Docker ağını oluşturun
+
+```powershell
+docker network create student-network
+```
+
+### 4. PostgreSQL konteynerini oluşturun
+
+```powershell
+docker run -d --name student-postgres --network student-network -e POSTGRES_USER=student -e POSTGRES_PASSWORD="$env:DB_PASSWORD" -e POSTGRES_DB=student_db -v student-data:/var/lib/postgresql/data postgres:17
+```
+
+### 5. Veritabanının hazır olduğunu kontrol edin
+
+```powershell
+docker exec student-postgres pg_isready -U student -d student_db
+```
+
+Accepting connections mesajı görünene kadar bekleyin.
+
+### 6. Veritabanını içe aktarın
+
+```powershell
+docker cp database.sql student-postgres:/tmp/database.sql
+docker exec student-postgres psql -U student -d student_db -v ON_ERROR_STOP=1 -f /tmp/database.sql
+```
+
+Bu işlem yalnızca boş bir veritabanında yapılmalıdır.
+
+### 7. Docker imajını oluşturun
 
 ```powershell
 docker build -t student-ai .
 ```
 
-Veritabanı parolasını ortam değişkeni olarak tanımlayın:
-
-```powershell
-$env:DB_PASSWORD = "VERITABANI_SIFRENIZ"
-```
-
-Uygulamayı çalıştırın:
+### 8. Uygulamayı çalıştırın
 
 ```powershell
 docker run --rm --network student-network -e DB_PASSWORD student-ai
 ```
 
-İşlem tamamlandıktan sonra ortam değişkenini temizleyin:
+### 9. Tahmin sonuçlarını kontrol edin
+
+```powershell
+docker exec student-postgres psql -U student -d student_db -c "SELECT * FROM predictions;"
+```
+
+### 10. Parola ortam değişkenini temizleyin
 
 ```powershell
 Remove-Item Env:DB_PASSWORD
 ```
+
+Sonraki çalıştırmalarda mevcut konteyneri başlatmak için `docker start student-postgres` komutunu kullanın. DB_PASSWORD ortam değişkenini yeniden tanımlayın ve uygulamayı çalıştırın.
 
 ## Proje Dosyaları
 
@@ -90,5 +134,5 @@ Remove-Item Env:DB_PASSWORD
 - .gitignore: Git tarafından takip edilmeyecek dosyalar.
 - mimari_diyagram.md: Proje mimarisinin Mermaid gösterimi.
 - mimari_diyagram.png: Proje mimarisi görseli.
-
+- database.sql: PostgreSQL tablo yapilari ve 210 ogrenciye ait ornek veri seti.
 
